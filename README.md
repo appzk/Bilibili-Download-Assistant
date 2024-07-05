@@ -93,3 +93,13 @@ sudo apt-get install python3
 ​	6.工具下载、合并完成后，会告知您成功/失败。若成功，则下载完成的音视频文件就放置在download.py所属的文件夹里。若失败，请检查ffmpeg.exe是否与download.py放置在同一目录中。
 
 ![](https://github.com/johnlimit/Bilibili-Download-Assistant/blob/main/pic/pic6.PNG?raw=true)
+
+### 跳过下载
+
+增加已存在，跳过下载功能
+
+音频文件 BV1e84y1T7jp_audio.mp3 已存在，跳过下载。
+文件 BV1e84y1T7jp_video.mp4 已存在，跳过下载。
+
+
+1 21 24 25 27 28 30 32 37 41 42 43 53 60

@@ -89,108 +89,258 @@ class BilibiliDownloader:
                 exit()
 
 
-    def download_data(self,audio_only=False,collection_num=-1,collection_name='1433juh8j4rk'):
+    def download_audio(self, collection_name, collection_num=-1, audio_only=False):
         print('准备下载音频数据...')
+        if audio_only:
+            # 音频文件名，根据 audio_only 确定后缀
+            audio_filename = f"{collection_name}.mp3" if collection_num == -1 else f"{collection_name}_{collection_num}.mp3"
+        else:
+            # 音频文件名，根据 audio_only 确定后缀
+            audio_filename = f"{collection_name}_audio.mp3" if collection_num == -1 else f"{collection_name}_{collection_num}_audio.mp3"
+
+        # 检查文件是否已经存在
+        if os.path.exists(audio_filename):
+            print(f"音频文件 {audio_filename} 已存在，跳过下载。")
+            return  # 如果文件已存在，则直接返回，不执行下载操作
+
+        
         resp = self.get_html(self.audio_url,is_stream=True)
         total = int(resp.headers.get('content-length',0))
         print(str(total))
         print('正在下载并保存为音频文件...' )
+        # 如果文件不存在，继续下载
+        total = int(resp.headers.get('content-length', 0))
+        print(f'正在下载音频文件...')
+
+        with open(audio_filename, 'wb') as f, tqdm(
+            desc=audio_filename,
+            total=total,
+            unit='iB',
+            unit_scale=True,
+            unit_divisor=1024
+        ) as bar:
+            for data in resp.iter_content(chunk_size=1024):
+                size = f.write(data)
+                bar.update(size)
+
+        print(Fore.GREEN + f'音频文件 {audio_filename} 保存成功!' + Style.RESET_ALL)
+    def download_video(self, collection_name, collection_num=-1, audio_only=False):
+        if audio_only == False:
+            # 构造视频文件的完整路径
+            video_filename = f"{collection_name}_video.mp4" if collection_num == -1 else f"{collection_name}_{collection_num}_video.mp4"
+            
+            # 检查文件是否已经存在
+            if os.path.exists(video_filename):
+                print(f"文件 {video_filename} 已存在，跳过下载。")
+                return  # 如果文件已存在，则直接返回，不执行下载操作
+
+            # 如果文件不存在，继续下载
+            resp = self.get_html(self.video_url, is_stream=True)
+            total = int(resp.headers.get('content-length', 0))
+            print('正在下载并保存为视频文件...')
+
+            with open(video_filename, 'wb') as f, tqdm(
+                desc=video_filename,
+                total=total,
+                unit='iB',
+                unit_scale=True,
+                unit_divisor=1024
+            ) as bar:
+                for data in resp.iter_content(chunk_size=1024):
+                    size = f.write(data)
+                    bar.update(size)
+
+            print(Fore.GREEN + '保存视频文件成功。' + Style.RESET_ALL)
+    def download_data(self,audio_only=False,collection_num=-1,collection_name='1433juh8j4rk'):
+        
         if collection_name == '1433juh8j4rk':
             collection_name = self.bv_number
-        if audio_only == True:
-            if collection_num == -1:
-                with open(collection_name + '.mp3',mode='wb') as f,tqdm(
-                    desc=collection_name+'.mp3',
-                    total=total,
-                    unit='iB',
-                    unit_scale=True,
-                    unit_divisor=1024
-                )as bar:
-                    for data in resp.iter_content(chunk_size=1024):
-                        size = f.write(data)
-                        bar.update(size)
-            else:
-                with open(collection_name + '_' + str(collection_num) + '.mp3',mode='wb') as f,tqdm(
-                    desc=collection_name + '_' + str(collection_num) + '.mp3',
-                    total=total,
-                    unit='iB',
-                    unit_scale=True,
-                    unit_divisor=1024
-                )as bar:
-                    for data in resp.iter_content(chunk_size=1024):
-                        size = f.write(data)
-                        bar.update(size)
+        self.download_audio(collection_name, collection_num, audio_only )
+        self.download_video(collection_name, collection_num, audio_only )
+
+        # if audio_only == True:
+        #     if collection_num == -1:
+        #         with open(collection_name + '.mp3',mode='wb') as f,tqdm(
+        #             desc=collection_name+'.mp3',
+        #             total=total,
+        #             unit='iB',
+        #             unit_scale=True,
+        #             unit_divisor=1024
+        #         )as bar:
+        #             for data in resp.iter_content(chunk_size=1024):
+        #                 size = f.write(data)
+        #                 bar.update(size)
+        #     else:
+        #         with open(collection_name + '_' + str(collection_num) + '.mp3',mode='wb') as f,tqdm(
+        #             desc=collection_name + '_' + str(collection_num) + '.mp3',
+        #             total=total,
+        #             unit='iB',
+        #             unit_scale=True,
+        #             unit_divisor=1024
+        #         )as bar:
+        #             for data in resp.iter_content(chunk_size=1024):
+        #                 size = f.write(data)
+        #                 bar.update(size)
+        # else:
+        #     if collection_num == -1:
+        #         with open(collection_name + '_audio.mp3',mode='wb') as f,tqdm(
+        #             desc=collection_name+'_audio.mp3',
+        #             total=total,
+        #             unit='iB',
+        #             unit_scale=True,
+        #             unit_divisor=1024
+        #         )as bar:
+        #             for data in resp.iter_content(chunk_size=1024):
+        #                 size = f.write(data)
+        #                 bar.update(size)
+        #     else:
+        #         with open(collection_name + '_' + str(collection_num) + '_audio.mp3',mode='wb') as f,tqdm(
+        #             desc=collection_name + '_' + str(collection_num) + '_audio.mp3',
+        #             total=total,
+        #             unit='iB',
+        #             unit_scale=True,
+        #             unit_divisor=1024
+        #         )as bar:
+        #             for data in resp.iter_content(chunk_size=1024):
+        #                 size = f.write(data)
+        #                 bar.update(size)
+        # print(Fore.GREEN + f'音频文件保存成功!' + Style.RESET_ALL)
+        # if audio_only == False:
+        #     # 检查文件是否存在，如果存在则覆盖
+        #     video_filename = f"{collection_name}_video.mp4" if collection_num == -1 else f"{collection_name}_{collection_num}_video.mp4"
+
+        #     if os.path.exists(video_filename):
+        #         # print(f"文件 {video_filename} 已存在，将被覆盖。")
+        #         print(f"文件 {video_filename} 已存在，跳过下载。")
+        #         # 强制覆盖文件，不进行确认
+        #         return  # 如果文件已存在，则直接返回，不执行下载操作
+
+        #     # 如果文件不存在，继续下载
+        #     resp = self.get_html(self.video_url, is_stream=True)
+        #     total = int(resp.headers.get('content-length', 0))
+        #     print('正在下载并保存为视频文件...')
+
+
+        #     with open(video_filename, 'wb') as f, tqdm(
+        #         desc=video_filename,
+        #         total=total,
+        #         unit='iB',
+        #         unit_scale=True,
+        #         unit_divisor=1024
+        #     ) as bar:
+        #         for data in resp.iter_content(chunk_size=1024):
+        #             size = f.write(data)
+        #             bar.update(size)
+
+        #     print(Fore.GREEN + '保存视频文件成功。' + Style.RESET_ALL)
+            # if collection_num == -1:
+            #     with open(collection_name + '_video.mp4',mode='wb') as f,tqdm(
+            #         desc=collection_name+'_video.mp4',
+            #         total=total,
+            #         unit='iB',
+            #         unit_scale=True,
+            #         unit_divisor=1024
+            #     )as bar:
+            #         for data in resp.iter_content(chunk_size=1024):
+            #             size = f.write(data)
+            #             bar.update(size)
+            # else:
+            #     with open(collection_name + '_' + str(collection_num) +'_video.mp4',mode='wb') as f,tqdm(
+            #         desc=collection_name + '_' + str(collection_num) +'_video.mp4',
+            #         total=total,
+            #         unit='iB',
+            #         unit_scale=True,
+            #         unit_divisor=1024
+            #     )as bar:
+            #         for data in resp.iter_content(chunk_size=1024):
+            #             size = f.write(data)
+            #             bar.update(size)
+            # print(Fore.GREEN + '保存视频文件成功。' + Style.RESET_ALL)
+    # """检查视频文件是否为HEVC格式"""
+    def is_hevc_format(self, video_path):
+        print('判断视频为HEVC格式...')
+        print(video_path)
+        try:
+            # 使用ffprobe获取视频流的编码格式
+            probe = subprocess.run(['ffprobe', '-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=codec_name', '-print_format', 'default=noprint_wrappers=1:nokey=1', video_path], 
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            return probe.stdout.strip().decode() == 'hevc'
+        except Exception as e:
+            print(f"Error checking video format: {e}")
+            return False
+    # """将HEVC格式的视频转换为H.264格式"""
+    def convert_hevc_to_h264(self, video_path, output_path):
+        print('正在转换视频为h264格式...')
+        try:
+            subprocess.run(['ffmpeg', '-i', video_path, '-vcodec', 'h264', output_path], check=True)
+            print(f"Converted {video_path} to {output_path}")
+        except subprocess.CalledProcessError as e:
+            print(f"Error converting video: {e}")
+    
+    # """合并视频和音频"""
+    # 检查视频是否为HEVC格式，如果是，则转换为H.264
+    def merge_video_audio(self, collection_name, collection_num=-1):
+        if collection_num == -1:
+            video_path = f'{collection_name}_video.mp4'
+            audio_path = f'{collection_name}_audio.mp3'
+            output_path = f'{collection_name}.mp4'
         else:
-            if collection_num == -1:
-                with open(collection_name + '_audio.mp3',mode='wb') as f,tqdm(
-                    desc=collection_name+'_audio.mp3',
-                    total=total,
-                    unit='iB',
-                    unit_scale=True,
-                    unit_divisor=1024
-                )as bar:
-                    for data in resp.iter_content(chunk_size=1024):
-                        size = f.write(data)
-                        bar.update(size)
-            else:
-                with open(collection_name + '_' + str(collection_num) + '_audio.mp3',mode='wb') as f,tqdm(
-                    desc=collection_name + '_' + str(collection_num) + '_audio.mp3',
-                    total=total,
-                    unit='iB',
-                    unit_scale=True,
-                    unit_divisor=1024
-                )as bar:
-                    for data in resp.iter_content(chunk_size=1024):
-                        size = f.write(data)
-                        bar.update(size)
-        print(Fore.GREEN + f'音频文件保存成功!' + Style.RESET_ALL)
-        if audio_only == False:
-            resp = self.get_html(self.video_url,is_stream=True)
-            total = int(resp.headers.get('content-length',0))
-            print('正在下载并保存为视频文件...' )
-            if collection_num == -1:
-                with open(collection_name + '_video.mp4',mode='wb') as f,tqdm(
-                    desc=collection_name+'_video.mp4',
-                    total=total,
-                    unit='iB',
-                    unit_scale=True,
-                    unit_divisor=1024
-                )as bar:
-                    for data in resp.iter_content(chunk_size=1024):
-                        size = f.write(data)
-                        bar.update(size)
-            else:
-                with open(collection_name + '_' + str(collection_num) +'_video.mp4',mode='wb') as f,tqdm(
-                    desc=collection_name + '_' + str(collection_num) +'_video.mp4',
-                    total=total,
-                    unit='iB',
-                    unit_scale=True,
-                    unit_divisor=1024
-                )as bar:
-                    for data in resp.iter_content(chunk_size=1024):
-                        size = f.write(data)
-                        bar.update(size)
-            print(Fore.GREEN + '保存视频文件成功。' + Style.RESET_ALL)
+            video_path = f'{collection_name}_{collection_num}_video.mp4'
+            audio_path = f'{collection_name}_{collection_num}_audio.mp3'
+            output_path = f'{collection_name}_{collection_num}.mp4'
+        if self.is_hevc_format(video_path):
+            converted_video_path = video_path.replace('.mp4', '_h264.mp4')
+            print('正在转换视频为h264格式...')
+            if os.path.exists(converted_video_path):
+                os.remove(converted_video_path)
+            self.convert_hevc_to_h264(video_path, converted_video_path)
+            video_path = converted_video_path
+        # 合并视频和音频
+        command = f'ffmpeg -i {video_path} -i {audio_path} -c:v copy -c:a aac -strict experimental {output_path}'
+        subprocess.run(command, shell=True)
+    def remove_files(self, collection_name, collection_num=-1):
+        # 打印视频合成成功的消息
+        if collection_num == -1:
+            print(Fore.GREEN + f'视频合成成功！文件名为{collection_name}.mp4。' + Style.RESET_ALL)
+            base_name = collection_name
+        else:
+            print(Fore.GREEN + f'第{collection_num}个视频合成成功！文件名为{collection_name}_{collection_num}.mp4。' + Style.RESET_ALL)
+            base_name = f"{collection_name}_{collection_num}"
+
+        # 构建并删除音频文件路径
+        audio_path = f"{base_name}_audio.mp3"
+        if os.path.exists(audio_path):
+            os.remove(audio_path)
+
+        # 构建并删除视频文件路径
+        video_path = f"{base_name}_video.mp4"
+        if os.path.exists(video_path):
+            os.remove(video_path)
+
+        # 构建并删除转换后的视频文件路径，如果存在
+        converted_video_path = video_path.replace('.mp4', '_h264.mp4')
+        if os.path.exists(converted_video_path):
+            os.remove(converted_video_path)
 
     def merge(self,collection_num=-1,collection_name='defef3e33f'):
         if collection_name == 'defef3e33f':
             collection_name = self.bv_number
         print('正在合并生成最终视频...')
+        # os.system('ffmpeg -version')
         time.sleep(1)
-        if collection_num == -1:
-            COMMAND = f'ffmpeg -i {collection_name}_video.mp4 -i {collection_name}_audio.mp3 -c:v copy -c:a aac -strict experimental {collection_name}.mp4'
-        else:
-            COMMAND = f'ffmpeg -i {collection_name}_{collection_num}_video.mp4 -i {collection_name}_{collection_num}_audio.mp3 -c:v copy -c:a aac -strict experimental {collection_name}_{collection_num}.mp4'
-        subprocess.run(COMMAND,shell=True)
+
+        # 使用示例
+        # collection_name = 'your_collection'
+        self.merge_video_audio(collection_name, collection_num)
+
+        # if collection_num == -1:
+        #     COMMAND = f'ffmpeg -i {collection_name}_video.mp4 -i {collection_name}_audio.mp3 -c:v copy -c:a aac -strict experimental {collection_name}.mp4'
+        # else:
+        #     COMMAND = f'ffmpeg -i {collection_name}_{collection_num}_video.mp4 -i {collection_name}_{collection_num}_audio.mp3 -c:v copy -c:a aac -strict experimental {collection_name}_{collection_num}.mp4'
+        # subprocess.run(COMMAND,shell=True)
         if (os.path.exists(collection_name + '.mp4') and collection_num == -1) or (os.path.exists(collection_name + '_' + str(collection_num) +'.mp4') and collection_num != -1):
-            if collection_num == -1:
-                print(Fore.GREEN + f'视频合成成功！文件名为{collection_name}.mp4。' + Style.RESET_ALL)
-                os.remove(collection_name + '_audio.mp3')
-                os.remove(collection_name + '_video.mp4')
-            else:
-                print(Fore.GREEN + f'第{collection_num}个视频合成成功！文件名为{collection_name}_{collection_num}.mp4。' + Style.RESET_ALL)
-                os.remove(collection_name + '_' + str(collection_num) + '_audio.mp3')
-                os.remove(collection_name + '_' + str(collection_num) + '_video.mp4')
+            self.remove_files(collection_name, collection_num)
+            
         else:
             #没有最终合成的文件，说明ffmpeg没有正确安装
             print(Fore.RED + '视频合成失败！请检查ffmpeg软件是否正确安装！\n提示:现在已经得到了纯音频文件和纯视频文件，若不安装ffmpeg软件，则可以用其他软件手动合成。' + Style.RESET_ALL)
@@ -203,9 +353,9 @@ def welcome_page():
     print('------------------------------------------------------')
     print()
     print(Fore.GREEN + 'BILIBILI_DOWNLOAD_ASSISTANT:B站音视频下载助理' + Style.RESET_ALL)
-    print('作者：南京邮电大学 林宏扬')
-    print('初稿：2022年8月26日')
-    print('当前版本：2022年9月1日版')
+    print('作者：roy')
+    print('初稿：2024年7月')
+    print('当前版本：2024年7月第1版')
     print('本工具依据GPL v3.0协议，使用ffmpeg软件进行音视频处理。')
     print('这是一个轻量级的B站音视频下载工具。')
     print(Fore.YELLOW + '操作系统类型:'+ platform.system() +Style.RESET_ALL)
@@ -242,8 +392,8 @@ def main():
 
     clear_screen()
     while True:
-        if (not os.path.exists('ffmpeg.exe')) and (platform.system() == 'Windows'):
-            no_ffmpeg_warning()
+        # if (not os.path.exists('ffmpeg.exe')) and (platform.system() == 'Windows'):
+        #     no_ffmpeg_warning()
         print('请选择以下操作:\n1:下载单个视频\n2:下载视频集合\n3:退出程序')
         print(Fore.YELLOW + '请注意:若您打算下载集合却选择1，则下载出来的视频是集合的第一个视频！'+ Style.RESET_ALL)
         choice = input('请输入:')
@@ -254,6 +404,8 @@ def main():
             is_download_collection = True
             bvid = input('请输入要下载' + Fore.YELLOW + '集合' + Style.RESET_ALL + '的BV号(以BV开头):')
             collection_name = input('请输入保存后的视频集合名称(默认为BV号):')
+            video_filter = input('请输入视频集合名称筛选项(如 1 2 3，表示为前3集，默认为全部):')
+            
         elif choice == '3':
             break
         else:
@@ -300,15 +452,22 @@ def main():
                 print(Fore.RED + '警告:该视频集合并不存在。您是否想下载单个视频?' + Style.RESET_ALL)
                 pause()
                 continue
-            
+            # BV1e84y1T7jp
             print(Fore.YELLOW + f'本合集共{num}个',end='')
             if audio_only:
                 print('音频' + Style.RESET_ALL)
             else:
                 print('视频' + Style.RESET_ALL)
 
+            # download_video_collection(bvid, collection_name, video_filter)
             for i in range(1,num + 1):
                 #把合集内的所有视频都下载下来
+                if video_filter:
+                    video_filter_set = set(map(int, video_filter.split()))
+                    if i not in video_filter_set:
+                        print(Fore.YELLOW + f'跳过下载第{i}个视频，因为它不在筛选项中。', end='')
+                        continue  # 如果有筛选项并且当前视频不在筛选项内，则跳过下载
+                # 打印正在下载的视频序号
                 print(Fore.YELLOW + f'正在下载第{i}个',end='')
                 if audio_only:
                     print('音频,' + Style.RESET_ALL,end='')
