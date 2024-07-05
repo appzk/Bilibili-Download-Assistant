@@ -98,8 +98,6 @@ sudo apt-get install python3
 
 增加已存在，跳过下载功能
 
-音频文件 BV1e84y1T7jp_audio.mp3 已存在，跳过下载。
-文件 BV1e84y1T7jp_video.mp4 已存在，跳过下载。
 
 
 1 21 24 25 27 28 30 32 37 41 42 43 53 60

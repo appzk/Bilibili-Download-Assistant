@@ -452,7 +452,7 @@ def main():
                 print(Fore.RED + '警告:该视频集合并不存在。您是否想下载单个视频?' + Style.RESET_ALL)
                 pause()
                 continue
-            # BV1e84y1T7jp
+            # 
             print(Fore.YELLOW + f'本合集共{num}个',end='')
             if audio_only:
                 print('音频' + Style.RESET_ALL)
